@@ -15,6 +15,22 @@
  */
 'use strict';
 
+// Shortcuts to DOM Elements.
+
+var btn = document.getElementById("submit");
+const messageListElement = document.getElementById('messages');
+const messageFormElement = document.getElementById("message-form");
+const messageInputElement = document.getElementById("message");
+const submitButtonElement = document.getElementById("submit");
+const imageButtonElement = document.getElementById("submitImage");
+const imageFormElement = document.getElementById("image-form");
+const mediaCaptureElement = document.getElementById("mediaCapture");
+const userPicElementd = document.getElementById("user-pic");
+const userNameElement = document.getElementById("user-name");
+const signInButtonElement = document.getElementById("sign-in");
+const signOutButtonElement = document.getElementById("sign-out");
+const signInSnackbarElement = document.getElementById("must-signin-snackbar");
+
 // Signs-in Friendly Chat.
 function signIn() {
   alert('TODO: Implement Google Sign-In');
@@ -28,8 +44,20 @@ function signOut() {
 
 //Initialize firebase.
 function initFirebase(){
-  // TODO
+  function initFirebase(){
+    firebase.initializeApp({
+      "apiKey": "AIzaSyDz0Xc2B-BB4Ikux2ne9ABxHZRBQIFHZkg",
+      "authDomain": "friendlychat-2068e.firebaseapp.com",
+      "databaseURL": "https://friendlychat-2068e.firebaseio.com",
+      "projectId": "friendlychat-2068e",
+      "storageBucket": "friendlychat-2068e.appspot.com",
+      "messagingSenderId": "1014510563829",
+      "appId": "1:1014510563829:web:d8648ececd5f6211e6f0bc",
+      "measurementId": "G-LY69RTS6GB"
+    });
+  }
 }
+
 // Initiate firebase auth.
 function initFirebaseAuth() {
   // TODO 3: Initialize Firebase.
@@ -283,19 +311,18 @@ function checkSetup() {
         'sure you are running the codelab using `firebase serve`');
   }
 }
-// Shortcuts to DOM Elements.
-var messageListElement;
-var messageFormElement;
-var messageInputElement;
-var submitButtonElement;
-var imageButtonElement;
-var imageFormElement;
-var mediaCaptureElement;
-var userPicElement;
-var userNameElement;
-var signInButtonElement;
-var signOutButtonElement;
-var signInSnackbarElement;
+
+
+btn.addEventListener('click', function() {
+  let p = document.createElement("p");
+  const msg = document.querySelector('#message');
+  const msgContainer = document.querySelector('#messages');
+  p.innerText = msg.value;
+  msgContainer.append(p);
+  msg.value = "";
+
+  console.log(msgContainer, " is msgContainer.", p, " is p");
+})
 
 // initialize Firebase
 initFirebase();

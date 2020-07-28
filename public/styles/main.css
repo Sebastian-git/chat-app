@@ -105,8 +105,8 @@ main, #messages-card {
   display: flex;
   flex-direction: row;
   width: calc(100% - 48px);
-  float: left;
 }
+#message-form>*{padding: 0; margin: 0}
 #image-form {
   display: flex;
   flex-direction: row;
@@ -118,13 +118,26 @@ main, #messages-card {
 }
 #message-form button, #image-form button {
   width: 100px;
-  margin: 15px 0 0 10px;
+  height: 34px;
+}
+#message {
+  width: 300px;
+  height: 30px;
+  background-color: black;
+  border: 2px solid #9e9e9e;
+  color: #76ff03;
+}
+#submit {
+  background-color: black;
+  border: 2px solid #9e9e9e;
+  color: #76ff03
 }
 .mdl-card {
   min-height: 0;
 }
 .mdl-card {
-  background: linear-gradient(white, #f9f9f9);
+  background: black;
+  border: 2px solid #76ff03;
   justify-content: space-between;
 }
 #user-container {
