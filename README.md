@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # chat_app_starter
 
 ## Directions
@@ -12,3 +13,6 @@ To run this project, you will need to complete the following workshops (found on
 
 ## Credits
 This tutorial was adapted from Google Codelab. 
+=======
+# chat_app
+>>>>>>> 75ee20e6e208a179d44f319265345199ae3b6a33
