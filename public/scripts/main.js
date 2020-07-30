@@ -17,91 +17,151 @@
 
 // Shortcuts to DOM Elements.
 
-var btn = document.getElementById("submit");
-const messageListElement = document.getElementById('messages');
-const messageFormElement = document.getElementById("message-form");
-const messageInputElement = document.getElementById("message");
-const submitButtonElement = document.getElementById("submit");
-const imageButtonElement = document.getElementById("submitImage");
-const imageFormElement = document.getElementById("image-form");
-const mediaCaptureElement = document.getElementById("mediaCapture");
-const userPicElementd = document.getElementById("user-pic");
-const userNameElement = document.getElementById("user-name");
-const signInButtonElement = document.getElementById("sign-in");
-const signOutButtonElement = document.getElementById("sign-out");
-const signInSnackbarElement = document.getElementById("must-signin-snackbar");
+//var btn = document.getElementById("submit");
+var messageListElement = document.getElementById('messages');
+var messageFormElement = document.getElementById('message-form');
+var messageInputElement = document.getElementById('message');
+var submitButtonElement = document.getElementById('submit');
+var imageButtonElement = document.getElementById('submitImage');
+var imageFormElement = document.getElementById('image-form');
+var mediaCaptureElement = document.getElementById('mediaCapture');
+var userPicElement = document.getElementById('user-pic');
+var userNameElement = document.getElementById('user-name');
+var signInButtonElement = document.getElementById('sign-in');
+var signOutButtonElement = document.getElementById('sign-out');
+var signInSnackbarElement = document.getElementById('must-signin-snackbar');
 
 // Signs-in Friendly Chat.
 function signIn() {
-  alert('TODO: Implement Google Sign-In');
-  // TODO 1: Sign in Firebase with credential from the Google user.
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider);
 }
 
 // Signs-out of Friendly Chat.
 function signOut() {
-  // TODO 2: Sign out of Firebase.
+  firebase.auth().signOut();
 }
 
 //Initialize firebase.
 function initFirebase(){
-  function initFirebase(){
-    firebase.initializeApp({
-      "apiKey": "AIzaSyDz0Xc2B-BB4Ikux2ne9ABxHZRBQIFHZkg",
-      "authDomain": "friendlychat-2068e.firebaseapp.com",
-      "databaseURL": "https://friendlychat-2068e.firebaseio.com",
-      "projectId": "friendlychat-2068e",
-      "storageBucket": "friendlychat-2068e.appspot.com",
-      "messagingSenderId": "1014510563829",
-      "appId": "1:1014510563829:web:d8648ececd5f6211e6f0bc",
-      "measurementId": "G-LY69RTS6GB"
-    });
-  }
+  firebase.initializeApp({
+    "apiKey": "AIzaSyBsZyWjiTsRaMyw2buXMqeQ8foToIoPG7s",
+    "authDomain": "slapchat-6c7fa.firebaseapp.com",
+    "databaseURL": "https://slapchat-6c7fa.firebaseio.com",
+    "projectId": "slapchat-6c7fa",
+    "storageBucket": "slapchat-6c7fa.appspot.com",
+    "messagingSenderId": "1014510563829",
+    "appId": "1:44204158929:web:24642b6f48ff962390faf0",
+    "measurementId": "G-LY69RTS6GB"
+  })
 }
 
 // Initiate firebase auth.
 function initFirebaseAuth() {
-  // TODO 3: Initialize Firebase.
+  firebase.auth().onAuthStateChanged(authStateObserver);
 }
 
 // Returns the signed-in user's profile Pic URL.
 function getProfilePicUrl() {
-  // TODO 4: Return the user's profile pic URL.
+  return firebase.auth().currentUser.photoURL || "/images/profile_placeholder.png";
 }
 
 // Returns the signed-in user's display name.
 function getUserName() {
-  // TODO 5: Return the user's display name.
+  return firebase.auth().currentUser.displayName;
 }
 
 // Returns true if a user is signed-in.
 function isUserSignedIn() {
-  // TODO 6: Return true if a user is signed-in.
+  return !!firebase.auth().currentUser;
 }
 
 // Saves a new message on the Firebase DB.
 function saveMessage(messageText) {
   // TODO 7: Push a new message to Firebase.
+  return firebase.firestore().collection("messages").add({ 
+  name: getUserName(),
+  text: messageText,
+  profilePicUrl: getProfilePicUrl(),
+  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  })
 }
 
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
-  // TODO 8: Load and listens for new messages.
+  // Create the query to load the last 12 messages and listen for new ones.
+  var query = firebase.firestore()
+                  .collection('messages')
+                  .orderBy('timestamp', 'desc')
+                  .limit(12);
+  
+  // Start listening to the query.
+  query.onSnapshot(function(snapshot) {
+    snapshot.docChanges().forEach(function(change) {
+      if (change.type === 'removed') {
+        deleteMessage(change.doc.id);
+      } else {
+        var message = change.doc.data();
+        displayMessage(change.doc.id, message.timestamp, message.name,
+                       message.text, message.profilePicUrl, message.imageUrl);
+      }
+    });
+  });
 }
 
 // Saves a new message containing an image in Firebase.
 // This first saves the image in Firebase storage.
 function saveImageMessage(file) {
-  // TODO 9: Posts a new image as a message.
+  // 1 - We add a message with a loading icon that will get updated with the shared image.
+  firebase.firestore().collection('messages').add({
+    name: getUserName(),
+    imageUrl: LOADING_IMAGE_URL,
+    profilePicUrl: getProfilePicUrl(),
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(messageRef) {
+    // 2 - Upload the image to Cloud Storage.
+    var filePath = firebase.auth().currentUser.uid + '/' + messageRef.id + '/' + file.name;
+    return firebase.storage().ref(filePath).put(file).then(function(fileSnapshot) {
+      // 3 - Generate a public URL for the file.
+      return fileSnapshot.ref.getDownloadURL().then((url) => {
+        // 4 - Update the chat message placeholder with the image's URL.
+        return messageRef.update({
+          imageUrl: url,
+          storageUri: fileSnapshot.metadata.fullPath
+        });
+      });
+    });
+  }).catch(function(error) {
+    console.error('There was an error uploading a file to Cloud Storage:', error);
+  });
 }
 
 // Saves the messaging device token to the datastore.
 function saveMessagingDeviceToken() {
-  // TODO 10: Save the device token in the realtime datastore
+  firebase.messaging().getToken().then(function(currentToken) {
+    if (currentToken) {
+      console.log('Got FCM device token:', currentToken);
+      // Saving the Device Token to the datastore.
+      firebase.firestore().collection('fcmTokens').doc(currentToken)
+          .set({uid: firebase.auth().currentUser.uid});
+    } else {
+      // Need to request permissions to show notifications.
+      requestNotificationsPermissions();
+    }
+  }).catch(function(error){
+    console.error('Unable to get messaging token.', error);
+  });
 }
 
-// Requests permissions to show notifications.
+// Requests permission to show notifications.
 function requestNotificationsPermissions() {
-  // TODO 11: Request permissions to send notifications.
+  console.log('Requesting notifications permission...');
+  firebase.messaging().requestPermission().then(function() {
+    // Notification permission granted.
+    saveMessagingDeviceToken();
+  }).catch(function(error) {
+    console.error('Unable to get permission to notify.', error);
+  });
 }
 
 // Triggered when a file is selected via the media picker.
@@ -133,7 +193,7 @@ function onMessageFormSubmit(e) {
   // Check that the user entered a message and is signed in.
   if (messageInputElement.value && checkSignedInWithMessage()) {
     saveMessage(messageInputElement.value).then(function() {
-      // Clear message text field and re-enable the SEND button.
+      // Clear message text field and re-enable the send button.
       resetMaterialTextfield(messageInputElement);
       toggleButton();
     });
@@ -200,6 +260,7 @@ var MESSAGE_TEMPLATE =
       '<div class="spacing"><div class="pic"></div></div>' +
       '<div class="message"></div>' +
       '<div class="name"></div>' +
+      '<div class="time"></div>' +
     '</div>';
 
 // Adds a size to Google Profile pics URLs.
@@ -266,19 +327,19 @@ function createAndInsertMessage(id, timestamp) {
 function displayMessage(id, timestamp, name, text, picUrl, imageUrl) {
   var div = document.getElementById(id) || createAndInsertMessage(id, timestamp);
 
-  // profile picture
   if (picUrl) {
     div.querySelector('.pic').style.backgroundImage = 'url(' + addSizeToGoogleProfilePic(picUrl) + ')';
   }
 
   div.querySelector('.name').textContent = name;
+  div.querySelector('.time').textContent = timestamp.toDate();
   var messageElement = div.querySelector('.message');
 
-  if (text) { // If the message is text.
+  if (text) {
     messageElement.textContent = text;
-    // Replace all line breaks by <br>.
+    
     messageElement.innerHTML = messageElement.innerHTML.replace(/\n/g, '<br>');
-  } else if (imageUrl) { // If the message is an image.
+  } else if (imageUrl) { 
     var image = document.createElement('img');
     image.addEventListener('load', function() {
       messageListElement.scrollTop = messageListElement.scrollHeight;
@@ -287,7 +348,7 @@ function displayMessage(id, timestamp, name, text, picUrl, imageUrl) {
     messageElement.innerHTML = '';
     messageElement.appendChild(image);
   }
-  // Show the card fading-in and scroll to view the new message.
+  
   setTimeout(function() {div.classList.add('visible')}, 1);
   messageListElement.scrollTop = messageListElement.scrollHeight;
   messageInputElement.focus();
@@ -312,7 +373,7 @@ function checkSetup() {
   }
 }
 
-
+/*
 btn.addEventListener('click', function() {
   let p = document.createElement("p");
   const msg = document.querySelector('#message');
@@ -323,6 +384,7 @@ btn.addEventListener('click', function() {
 
   console.log(msgContainer, " is msgContainer.", p, " is p");
 })
+*/
 
 // initialize Firebase
 initFirebase();
@@ -352,3 +414,22 @@ initFirebaseAuth();
 
 // We load currently existing chat messages and listen to new ones.
 loadMessages();
+
+
+/*
+
+
+curl -H "Content-Type: application/json" \
+     -H "Authorization: key=AAAACkrF79E:APA91bHXKD4Ycu1AQk4jgGISEvj1IO8I0SCg3SgsGJoRD6AiW_15pjPw7nQam3dec6Rk7QA5Qh0Brhw0mTlaB1DniHi2OApZKCseGetpxUsowqZYSAjYszH7c1noLXLfxeBSpBt0afKI" \
+     -d '{
+           "notification": {
+             "title": "New chat message!",
+             "body": "There is a new message in FriendlyChat",
+             "icon": "/images/profile_placeholder.png",
+             "click_action": "http://localhost:5000"
+           },
+           "to": "eW6CVH2KBFL4LnoL4vhUQz:APA91bGyVWAcZqZh7Tbi7frKCWofMhxs_4iBLqlwMZBxbvvqU6tItvlotiPeXj6tV-pFWBlW1iLf2KanPopvf7uCga4FyNH2QXw4bm_Rtza-rtlwUyU6OnJYJVAK1bKEj6wJlzcr7NxL"
+         }' \
+     https://fcm.googleapis.com/fcm/send
+
+*/
