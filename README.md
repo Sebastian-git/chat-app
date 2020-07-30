@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# chat_app_starter
+# Chat App
 
 ## Directions
 To run this project, you will need to complete the following workshops (found on Notion):
@@ -15,4 +14,3 @@ To run this project, you will need to complete the following workshops (found on
 This tutorial was adapted from Google Codelab. 
 =======
 # chat_app
->>>>>>> 75ee20e6e208a179d44f319265345199ae3b6a33
