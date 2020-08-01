@@ -16,8 +16,6 @@
 'use strict';
 
 // Shortcuts to DOM Elements.
-
-//var btn = document.getElementById("submit");
 var messageListElement = document.getElementById('messages');
 var messageFormElement = document.getElementById('message-form');
 var messageInputElement = document.getElementById('message');
@@ -31,13 +29,13 @@ var signInButtonElement = document.getElementById('sign-in');
 var signOutButtonElement = document.getElementById('sign-out');
 var signInSnackbarElement = document.getElementById('must-signin-snackbar');
 
-// Signs-in Friendly Chat.
+// Sign in to gmail account
 function signIn() {
   var provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider);
 }
 
-// Signs-out of Friendly Chat.
+// Sign out of gmail account
 function signOut() {
   firebase.auth().signOut();
 }
@@ -56,29 +54,28 @@ function initFirebase(){
   })
 }
 
-// Initiate firebase auth.
+// Initialize firebase
 function initFirebaseAuth() {
   firebase.auth().onAuthStateChanged(authStateObserver);
 }
 
-// Returns the signed-in user's profile Pic URL.
+// Returns profilePicUrl
 function getProfilePicUrl() {
   return firebase.auth().currentUser.photoURL || "/images/profile_placeholder.png";
 }
 
-// Returns the signed-in user's display name.
+// Returns username
 function getUserName() {
   return firebase.auth().currentUser.displayName;
 }
 
-// Returns true if a user is signed-in.
+// Returns true if user signed in
 function isUserSignedIn() {
   return !!firebase.auth().currentUser;
 }
 
-// Saves a new message on the Firebase DB.
+// Returns collection of formatted saved message
 function saveMessage(messageText) {
-  // TODO 7: Push a new message to Firebase.
   return firebase.firestore().collection("messages").add({ 
   name: getUserName(),
   text: messageText,
@@ -87,15 +84,13 @@ function saveMessage(messageText) {
   })
 }
 
-// Loads chat messages history and listens for upcoming ones.
+// Formats message
 function loadMessages() {
-  // Create the query to load the last 12 messages and listen for new ones.
   var query = firebase.firestore()
                   .collection('messages')
                   .orderBy('timestamp', 'desc')
                   .limit(12);
-  
-  // Start listening to the query.
+
   query.onSnapshot(function(snapshot) {
     snapshot.docChanges().forEach(function(change) {
       if (change.type === 'removed') {
@@ -109,22 +104,17 @@ function loadMessages() {
   });
 }
 
-// Saves a new message containing an image in Firebase.
-// This first saves the image in Firebase storage.
+// Saves image message to firebase cloud
 function saveImageMessage(file) {
-  // 1 - We add a message with a loading icon that will get updated with the shared image.
   firebase.firestore().collection('messages').add({
     name: getUserName(),
     imageUrl: LOADING_IMAGE_URL,
     profilePicUrl: getProfilePicUrl(),
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(messageRef) {
-    // 2 - Upload the image to Cloud Storage.
     var filePath = firebase.auth().currentUser.uid + '/' + messageRef.id + '/' + file.name;
     return firebase.storage().ref(filePath).put(file).then(function(fileSnapshot) {
-      // 3 - Generate a public URL for the file.
       return fileSnapshot.ref.getDownloadURL().then((url) => {
-        // 4 - Update the chat message placeholder with the image's URL.
         return messageRef.update({
           imageUrl: url,
           storageUri: fileSnapshot.metadata.fullPath
@@ -136,16 +126,14 @@ function saveImageMessage(file) {
   });
 }
 
-// Saves the messaging device token to the datastore.
+// Saves message with specific device "token" and gets permission to show notifications
 function saveMessagingDeviceToken() {
   firebase.messaging().getToken().then(function(currentToken) {
     if (currentToken) {
       console.log('Got FCM device token:', currentToken);
-      // Saving the Device Token to the datastore.
       firebase.firestore().collection('fcmTokens').doc(currentToken)
           .set({uid: firebase.auth().currentUser.uid});
     } else {
-      // Need to request permissions to show notifications.
       requestNotificationsPermissions();
     }
   }).catch(function(error){
@@ -157,22 +145,18 @@ function saveMessagingDeviceToken() {
 function requestNotificationsPermissions() {
   console.log('Requesting notifications permission...');
   firebase.messaging().requestPermission().then(function() {
-    // Notification permission granted.
     saveMessagingDeviceToken();
   }).catch(function(error) {
     console.error('Unable to get permission to notify.', error);
   });
 }
 
-// Triggered when a file is selected via the media picker.
+// 
 function onMediaFileSelected(event) {
   event.preventDefault();
   var file = event.target.files[0];
-
-  // Clear the selection in the file picker input.
   imageFormElement.reset();
 
-  // Check if the file is an image.
   if (!file.type.match('image.*')) {
     var data = {
       message: 'You can only share images',
@@ -326,13 +310,13 @@ function createAndInsertMessage(id, timestamp) {
 // Displays a Message in the UI.
 function displayMessage(id, timestamp, name, text, picUrl, imageUrl) {
   var div = document.getElementById(id) || createAndInsertMessage(id, timestamp);
+  let fixedDate = (timestamp.toDate()).toString().substring(3,24);
 
   if (picUrl) {
     div.querySelector('.pic').style.backgroundImage = 'url(' + addSizeToGoogleProfilePic(picUrl) + ')';
   }
 
-  div.querySelector('.name').textContent = name;
-  div.querySelector('.time').textContent = timestamp.toDate();
+  div.querySelector('.name').textContent = name + " " + fixedDate;
   var messageElement = div.querySelector('.message');
 
   if (text) {
