@@ -1,5 +1,8 @@
 # Chat App
 
+## Website link:
+https://slapchat-6c7fa.web.app/
+
 ## Directions
 To run this project, you will need to complete the following workshops (found on Notion):
 
