@@ -17,8 +17,8 @@ HTML 5, CSS 3, JavaScript
 
 In Progress
 
-#### [back to the top](#chat)
-
-
 ### Credits
+
 This tutorial was adapted from Google Codelab. 
+
+#### [back to the top](#chat)
