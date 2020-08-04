@@ -1,18 +1,4 @@
-/**
- * Copyright 2018 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Enables JavaScript's "strict" functionality
 'use strict';
 
 // Shortcuts to DOM Elements.
@@ -61,7 +47,7 @@ function initFirebaseAuth() {
 
 // Returns profilePicUrl
 function getProfilePicUrl() {
-  return firebase.auth().currentUser.photoURL || "/images/profile_placeholder.png";
+  return firebase.auth().currentUser.photoURL || "/images/profileHacker.png";
 }
 
 // Returns username
@@ -78,7 +64,7 @@ function isUserSignedIn() {
 function saveMessage(messageText) {
   return firebase.firestore().collection("messages").add({ 
   name: getUserName(),
-  text: messageText,
+  text: (messageText),
   profilePicUrl: getProfilePicUrl(),
   timestamp: firebase.firestore.FieldValue.serverTimestamp()
   })
@@ -151,7 +137,7 @@ function requestNotificationsPermissions() {
   });
 }
 
-// 
+// Called when image button is clicked
 function onMediaFileSelected(event) {
   event.preventDefault();
   var file = event.target.files[0];
@@ -186,8 +172,7 @@ function onMessageFormSubmit(e) {
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
 function authStateObserver(user) {
-  if (user) { // User is signed in!
-    // Get the signed-in user's profile pic and name.
+  if (user) { 
     var profilePicUrl = getProfilePicUrl();
     var userName = getUserName();
 
@@ -205,20 +190,18 @@ function authStateObserver(user) {
 
     // We save the Firebase Messaging Device token and enable notifications.
     saveMessagingDeviceToken();
-  } else { // User is signed out!
+  } else { 
     // Hide user's profile and sign-out button.
     userNameElement.setAttribute('hidden', 'true');
     userPicElement.setAttribute('hidden', 'true');
     signOutButtonElement.setAttribute('hidden', 'true');
 
-    // Show sign-in button.
     signInButtonElement.removeAttribute('hidden');
   }
 }
 
 // Returns true if user is signed-in. Otherwise false and displays a message.
 function checkSignedInWithMessage() {
-  // Return true if the user is signed in Firebase
   if (isUserSignedIn()) {
     return true;
   }
@@ -261,24 +244,21 @@ var LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif?a';
 // Delete a Message from the UI.
 function deleteMessage(id) {
   var div = document.getElementById(id);
-  // If an element for that message exists we delete it.
   if (div) {
     div.parentNode.removeChild(div);
   }
 }
 
+// Adds message to screen
 function createAndInsertMessage(id, timestamp) {
   const container = document.createElement('div');
   container.innerHTML = MESSAGE_TEMPLATE;
   const div = container.firstChild;
   div.setAttribute('id', id);
 
-  // If timestamp is null, assume we've gotten a brand new message.
-  // https://stackoverflow.com/a/47781432/4816918
   timestamp = timestamp ? timestamp.toMillis() : Date.now();
   div.setAttribute('timestamp', timestamp);
 
-  // figure out where to insert new message
   const existingMessages = messageListElement.children;
   if (existingMessages.length === 0) {
     messageListElement.appendChild(div);
@@ -293,17 +273,13 @@ function createAndInsertMessage(id, timestamp) {
           `Child ${messageListNode.id} has no 'timestamp' attribute`
         );
       }
-
       if (messageListNodeTime > timestamp) {
         break;
       }
-
       messageListNode = messageListNode.nextSibling;
     }
-
     messageListElement.insertBefore(div, messageListNode);
   }
-
   return div;
 }
 
@@ -338,8 +314,7 @@ function displayMessage(id, timestamp, name, text, picUrl, imageUrl) {
   messageInputElement.focus();
 }
 
-// Enables or disables the submit button depending on the values of the input
-// fields.
+// Enables or disables the submit button depending on the values of the input fields
 function toggleButton() {
   if (messageInputElement.value) {
     submitButtonElement.removeAttribute('disabled');
@@ -357,22 +332,16 @@ function checkSetup() {
   }
 }
 
-/*
-btn.addEventListener('click', function() {
-  let p = document.createElement("p");
-  const msg = document.querySelector('#message');
-  const msgContainer = document.querySelector('#messages');
-  p.innerText = msg.value;
-  msgContainer.append(p);
-  msg.value = "";
+// Display user's IP address in an alert
+function getIP() {
+  $.getJSON("https://api.ipify.org?format=json", function(data) { 
+    $("#gfg").html(data.ip); 
+    alert(data.ip);
+  }) 
+}
 
-  console.log(msgContainer, " is msgContainer.", p, " is p");
-})
-*/
-
-// initialize Firebase
+// initialize Firebase and checks import
 initFirebase();
-// Checks that Firebase has been imported.
 checkSetup();
 
 // Saves message on form submit.
@@ -391,29 +360,5 @@ imageButtonElement.addEventListener('click', function(e) {
 });
 mediaCaptureElement.addEventListener('change', onMediaFileSelected);
 
-// initialize Firebase Auth
 initFirebaseAuth();
-
-// TODO: Enable Firebase Performance Monitoring.
-
-// We load currently existing chat messages and listen to new ones.
 loadMessages();
-
-
-/*
-
-
-curl -H "Content-Type: application/json" \
-     -H "Authorization: key=AAAACkrF79E:APA91bHXKD4Ycu1AQk4jgGISEvj1IO8I0SCg3SgsGJoRD6AiW_15pjPw7nQam3dec6Rk7QA5Qh0Brhw0mTlaB1DniHi2OApZKCseGetpxUsowqZYSAjYszH7c1noLXLfxeBSpBt0afKI" \
-     -d '{
-           "notification": {
-             "title": "New chat message!",
-             "body": "There is a new message in FriendlyChat",
-             "icon": "/images/profile_placeholder.png",
-             "click_action": "http://localhost:5000"
-           },
-           "to": "eW6CVH2KBFL4LnoL4vhUQz:APA91bGyVWAcZqZh7Tbi7frKCWofMhxs_4iBLqlwMZBxbvvqU6tItvlotiPeXj6tV-pFWBlW1iLf2KanPopvf7uCga4FyNH2QXw4bm_Rtza-rtlwUyU6OnJYJVAK1bKEj6wJlzcr7NxL"
-         }' \
-     https://fcm.googleapis.com/fcm/send
-
-*/
