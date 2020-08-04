@@ -1,19 +1,24 @@
-# Chat App
+# Chat Program
 
-## Website link:
-https://slapchat-6c7fa.web.app/
+### Introduction
+This chat website was created using Javascript, CSS and HTML. All messages are stored on a Firebase server and loaded up when clients connect. To add to the hacker theme, a button was added that displays the user's IPV4 Address in an alert.
 
-## Directions
-To run this project, you will need to complete the following workshops (found on Notion):
+### Examples
 
-1. Project Intro -- HTML (form and header elements in index.html)
-2. DOM Elements (main.js) 
-3. Firebase initialization, config, and local serving (main.js) 
-4. Firebase authentication (main.js)
-5. Firebase hosting and deploying
-6. Firebase Firestore (main.js)
+(Preview to be updated soon)
 
-## Credits
+![](/images/preview.png)
+
+### Launch
+
+HTML 5, CSS 3, JavaScript
+
+### Status
+
+In Progress
+
+#### [back to the top](#chat)
+
+
+### Credits
 This tutorial was adapted from Google Codelab. 
-=======
-# chat_app
