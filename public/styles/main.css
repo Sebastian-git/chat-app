@@ -2,7 +2,7 @@ html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
 }
 main, #messages-card {
-  height: 85%;
+  height: 75%;
   padding-bottom: 0;
 }
 #messages-card-container {
